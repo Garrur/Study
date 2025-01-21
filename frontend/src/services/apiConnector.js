@@ -2,7 +2,7 @@ import axios from "axios";
 
 // Create an axios instance with a base URL
 export const axiosInstance = axios.create({
-    baseURL: 'http://localhost:5000', // Set the base URL to your API server
+    baseURL: 'http://localhost:5000/api/v1', // Set the base URL to your API server
 });
 
 // Enhanced apiConnector with error handling and logging

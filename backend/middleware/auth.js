@@ -9,6 +9,8 @@ require('dotenv').config();
 exports.auth = (req, res, next) => {
     const token = req.body?.token || req.cookies?.token || req.header('Authorization')?.replace('Bearer ', '').trim();
     console.log("Extracted token:", token);
+    console.log(process.env.JWT_SECRET);
+    
     
     if (!token) {
         return res.status(401).json({
@@ -17,7 +19,11 @@ exports.auth = (req, res, next) => {
         });
     }
 
-    
+    // const parts = token.split('.');
+    //     if (parts.length !== 3) {
+    //         throw new Error('Invalid token structure');
+    //     }
+    //     console.log(parts)
 
     try {
         // Check if token has 3 parts (header, payload, signature)
@@ -66,15 +72,6 @@ exports.auth = (req, res, next) => {
         });
     }
 };
-
-
-
-
-
-
-
-
-
 
 
 // ================ IS STUDENT ================
