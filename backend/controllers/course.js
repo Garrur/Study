@@ -1,18 +1,21 @@
-const mongoose = require('mongoose');
 const Course = require('../models/course');
 const User = require('../models/user');
 const Category = require('../models/category');
 const Section = require('../models/section')
 const SubSection = require('../models/subSection')
 const CourseProgress = require('../models/courseProgress')
-
+const mongoose = require('mongoose');
 const { uploadImageToCloudinary, deleteResourceFromCloudinary } = require('../utils/imageUploader');
 const { convertSecondsToDuration } = require("../utils/secToDuration")
 
 
 
 // ================ create new course ================
-
+// const mongoose = require('mongoose');
+// const Category = require('./models/Category'); // Adjust path as necessary
+// const Course = require('./models/Course');     // Adjust path as necessary
+// const User = require('./models/User');         // Adjust path as necessary
+// const { uploadImageToCloudinary } = require('./utils/cloudinary'); // or appropriate import
 
 exports.createCourse = async (req, res) => {
   try {
@@ -22,13 +25,13 @@ exports.createCourse = async (req, res) => {
       courseDescription,
       whatYouWillLearn,
       price,
-      category,
+      category,        // expecting a slug now instead of ObjectId
       instructions: _instructions,
       status,
       tag: _tag,
     } = req.body;
 
-    // Parse tag and instructions (handle potential JSON parsing errors)
+    // Parse tag and instructions
     let tag, instructions;
     try {
       tag = JSON.parse(_tag);
@@ -43,13 +46,13 @@ exports.createCourse = async (req, res) => {
     // Get thumbnail of course
     const thumbnail = req.files?.thumbnailImage;
 
-    // Validation
+    // Basic validation
     if (
       !courseName ||
       !courseDescription ||
       !whatYouWillLearn ||
       !price ||
-      !category ||
+      !category ||  // slug should be provided
       !thumbnail ||
       !instructions.length ||
       !tag.length
@@ -61,22 +64,16 @@ exports.createCourse = async (req, res) => {
     }
 
     // Set default status if not provided
-    if (!status || status === undefined) {
+    if (!status) {
       status = 'Draft';
     }
 
-    // Check current user is an instructor
+    // Get instructor ID from authenticated user
     const instructorId = req.user.id;
-
-    // Validate the category (must be a valid ObjectId)
-    if (!mongoose.Types.ObjectId.isValid(category)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid category ID.',
-      });
-    }
-
-    const categoryDetails = await Category.findById(category);
+    console.log("category --->",category)
+    // Find category by slug instead of by ObjectId
+    const categoryDetails = await Category.findOne({ slug: category });
+    console.log('categoryDetails ->',categoryDetails)
     if (!categoryDetails) {
       return res.status(404).json({
         success: false,
@@ -97,7 +94,7 @@ exports.createCourse = async (req, res) => {
       instructor: instructorId,
       whatYouWillLearn,
       price,
-      category: categoryDetails._id,
+      category: categoryDetails._id,  // use the found category's ObjectId
       tag,
       status,
       instructions,
@@ -114,9 +111,9 @@ exports.createCourse = async (req, res) => {
       { new: true }
     );
 
-    // Add the new course to the category's course list
+    // Add the new course to the category's courses list
     await Category.findByIdAndUpdate(
-      category,
+      categoryDetails._id,
       {
         $push: { courses: newCourse._id },
       },
@@ -138,8 +135,6 @@ exports.createCourse = async (req, res) => {
     });
   }
 };
-
-
 
 // ================ show all courses ================
 exports.getAllCourses = async (req, res) => {

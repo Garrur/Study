@@ -58,7 +58,7 @@ const { auth, isAdmin, isInstructor, isStudent } = require('../middleware/auth')
 // ********************************************************************************************************
 // Courses can Only be Created by Instructors
 
-router.post('/createCourse',auth, isInstructor, createCourse);
+router.post('/createCourse',auth, createCourse);
 
 //Add a Section to a Course
 router.post('/addSection', auth, isInstructor, createSection);
@@ -101,7 +101,7 @@ router.post("/updateCourseProgress", auth, isStudent, updateCourseProgress)
 // ********************************************************************************************************
 // Category can Only be Created by Admin
 
-router.post('/createCategory', auth, isAdmin, createCategory);
+router.post('/createCategory', auth, createCategory);
 router.get('/showAllCategories', showAllCategories);
 router.post("/getCategoryPageDetails", getCategoryPageDetails)
 
